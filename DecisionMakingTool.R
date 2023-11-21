@@ -38,8 +38,23 @@ DS = DS %>%
 
 
 ###Graph publications into deicision making tool - sunchart
-sunburstR::sunburst(unname(DS), 
-                    colors= list("#012d4a", "#ebf1f5", "#cae7fa", "#afdcfa", 
-                                 "#91d0fa", "#6ec2fa", "#4bb4fa", 
-                                 "#28a4f7", "#0a9afa", "#0365a6" 
-                    ))
+sunburst(
+  DS,
+  withD3 = TRUE,
+  colors= htmlwidgets::JS("
+function() {
+  debugger
+  // this will be d3 version 4
+  const node = d3.select(this).datum()
+  let color
+  
+  if(node.depth > 0) {  // 2nd level
+    const ancestors = node.depth === 1 ? [node.parent, node] : node.ancestors().reverse()
+    // inefficient to define every time but will do this way for now
+    color = d3.scaleOrdinal(d3.schemeCategory10)
+      .domain(ancestors[0].children.map(d=>d.data.name))
+    return(d3.color(color(ancestors[1].data.name)).brighter((node.depth - 1)/4))
+  }
+}
+  ")
+)
